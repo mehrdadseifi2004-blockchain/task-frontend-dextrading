@@ -135,16 +135,16 @@ export default async function Token({ params }: Props) {
         {params.params[TOKEN_PAGE_PARAMS.NETWORK].toUpperCase()} Market Data
       </h1>
 
-      <TokenPage params={params} token={searchedToken} />
-
       {parsedContent && (
-        <article className="mt-10" itemScope itemType="https://schema.org/Article">
+        <article className="prose max-w-none" itemScope itemType="https://schema.org/Article">
           <h2 itemProp="headline">About this token</h2>
           <div itemProp="articleBody">
             {parsedContent}
           </div>
         </article>
       )}
+
+      <TokenPage params={params} token={searchedToken} />
 
       {tokenHtmlContent && (
         <TokenAccordion
