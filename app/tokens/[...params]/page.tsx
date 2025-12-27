@@ -11,6 +11,7 @@ import {
 import HowToUse from "@/components/features/followed-wallets/HowToUse";
 import { TOKEN_PAGE_PARAMS } from "@/utils/pageParams";
 import { minifyContract } from "@/utils/truncate";
+import { parseHtmlToReact } from "@/utils/htmlParser";
 
 interface Props {
   params: IParam;
@@ -106,6 +107,7 @@ export default async function Token({ params }: Props) {
   const tokenDescription = await getTokenDescription(params.params[1]);
 
   const tokenHtmlContent = tokenDescription?.data?.data?.content;
+  const parsedContent = tokenHtmlContent ? parseHtmlToReact(tokenHtmlContent) : null;
 
   return (
     <div>
@@ -135,15 +137,12 @@ export default async function Token({ params }: Props) {
 
       <TokenPage params={params} token={searchedToken} />
 
-      {tokenHtmlContent && (
+      {parsedContent && (
         <article className="mt-10" itemScope itemType="https://schema.org/Article">
           <h2 itemProp="headline">About this token</h2>
-          <div
-            itemProp="articleBody"
-            dangerouslySetInnerHTML={{
-              __html: tokenHtmlContent,
-            }}
-          />
+          <div itemProp="articleBody">
+            {parsedContent}
+          </div>
         </article>
       )}
 

@@ -72,6 +72,7 @@
     "embla-carousel-react": "^8.5.1",
     "ethers": "^6.13.4",
     "framer-motion": "^11.2.12",
+    "html-react-parser": "^5.2.11",
     "html-to-image": "^1.11.11",
     "html2canvas": "^1.4.1",
     "local-storage": "^2.0.0",

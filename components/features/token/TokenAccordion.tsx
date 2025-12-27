@@ -8,6 +8,7 @@ import {
   Accordion,
 } from "@/components/ui/accordion";
 import Image from "next/image";
+import { parseHtmlToReact } from "@/utils/htmlParser";
 
 function TokenAccordion({
   tokenDescription,
@@ -16,9 +17,11 @@ function TokenAccordion({
   tokenDescription: string;
   tokenImageUrl: string;
 }) {
+  const parsedContent = tokenDescription ? parseHtmlToReact(tokenDescription) : null;
+
   return (
     <>
-      {tokenDescription && (
+      {parsedContent && (
         <Accordion type="single" collapsible className="w-full mt-3">
           <AccordionItem className="my-1" value={"how to use"}>
             <AccordionTrigger className="text-left rounded-xl transition-colors pl-4 my-2 flex justify-between items-center text-sm md:text-base">
@@ -33,10 +36,9 @@ function TokenAccordion({
               />
             </AccordionTrigger>
             <AccordionContent className="px-4 py-8 text-left">
-              <div
-                className="token-content-description"
-                dangerouslySetInnerHTML={{ __html: tokenDescription }}
-              />
+              <div className="token-content-description">
+                {parsedContent}
+              </div>
             </AccordionContent>
           </AccordionItem>
         </Accordion>
