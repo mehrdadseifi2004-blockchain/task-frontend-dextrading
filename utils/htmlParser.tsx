@@ -1,20 +1,78 @@
 import parse, { HTMLReactParserOptions, Element, domToReact, DOMNode } from "html-react-parser";
 import { ReactNode } from "react";
 
+function normalizeHtml(html: string): string {
+  let normalized = html;
+  
+  const removeNestedTags = (tag: string, replacement: string = "") => {
+    const openTag = new RegExp(`<${tag}[^>]*>`, "gi");
+    const closeTag = new RegExp(`</${tag}>`, "gi");
+    normalized = normalized.replace(openTag, replacement);
+    normalized = normalized.replace(closeTag, replacement);
+  };
+  
+  removeNestedTags("details");
+  removeNestedTags("summary");
+  
+  normalized = normalized.replace(/<[^>]+\s+hidden(?:\s|>)/gi, "");
+  normalized = normalized.replace(/<[^>]+\s+style\s*=\s*["'][^"']*display\s*:\s*none[^"']*["'][^>]*>/gi, "");
+  normalized = normalized.replace(/<[^>]+\s+style\s*=\s*["'][^"']*visibility\s*:\s*hidden[^"']*["'][^>]*>/gi, "");
+  
+  normalized = normalized.replace(/<div[^>]*>/gi, "<p>");
+  normalized = normalized.replace(/<\/div>/gi, "</p>");
+  removeNestedTags("span");
+  
+  normalized = normalized.replace(/<h[1-6][^>]*>/gi, (match) => {
+    if (match.includes("h1") || match.includes("h2")) {
+      return match.replace(/h[12]/, "h2");
+    }
+    return "<h2>";
+  });
+  normalized = normalized.replace(/<\/h[1-6]>/gi, "</h2>");
+  
+  normalized = normalized.replace(/<ol[^>]*>/gi, "<ul>");
+  normalized = normalized.replace(/<\/ol>/gi, "</ul>");
+  
+  normalized = normalized.replace(/<blockquote[^>]*>/gi, "<p>");
+  normalized = normalized.replace(/<\/blockquote>/gi, "</p>");
+  
+  removeNestedTags("strong");
+  removeNestedTags("b");
+  removeNestedTags("em");
+  removeNestedTags("i");
+  removeNestedTags("a");
+  removeNestedTags("img");
+  removeNestedTags("br");
+  removeNestedTags("hr");
+  removeNestedTags("code");
+  
+  normalized = normalized.replace(/<pre[^>]*>/gi, "<p>");
+  normalized = normalized.replace(/<\/pre>/gi, "</p>");
+  
+  normalized = normalized.replace(/<p>\s*<\/p>/gi, "");
+  normalized = normalized.replace(/(<p>)\s*(<p>)/gi, "$1$2");
+  normalized = normalized.replace(/(<\/p>)\s*(<\/p>)/gi, "$1$2");
+  
+  return normalized;
+}
+
 export function parseHtmlToReact(html: string): ReactNode {
+  const normalizedHtml = normalizeHtml(html);
+  
   const options: HTMLReactParserOptions = {
     replace: (domNode) => {
       if (domNode instanceof Element && domNode.attribs) {
         const { name, attribs, children } = domNode;
+        
+        if (attribs.hidden || attribs.style?.includes("display:none") || attribs.style?.includes("visibility:hidden")) {
+          return <></>;
+        }
+        
         const props: Record<string, any> = {};
         
-        Object.keys(attribs).forEach((key) => {
-          if (key === "class") {
-            props.className = attribs[key];
-          } else {
-            props[key] = attribs[key];
-          }
-        });
+        if (attribs.class && !attribs.class.includes("hidden")) {
+          props.className = attribs.class;
+        }
         
         const childNodes = children ? (children as unknown as DOMNode[]) : [];
         const childElements = childNodes.length > 0 
@@ -24,56 +82,20 @@ export function parseHtmlToReact(html: string): ReactNode {
         switch (name) {
           case "p":
             return <p {...props}>{childElements}</p>;
-          case "h1":
-            return <h1 {...props}>{childElements}</h1>;
           case "h2":
             return <h2 {...props}>{childElements}</h2>;
-          case "h3":
-            return <h3 {...props}>{childElements}</h3>;
-          case "h4":
-            return <h4 {...props}>{childElements}</h4>;
-          case "h5":
-            return <h5 {...props}>{childElements}</h5>;
-          case "h6":
-            return <h6 {...props}>{childElements}</h6>;
           case "ul":
             return <ul {...props}>{childElements}</ul>;
-          case "ol":
-            return <ol {...props}>{childElements}</ol>;
           case "li":
             return <li {...props}>{childElements}</li>;
-          case "div":
-            return <div {...props}>{childElements}</div>;
-          case "span":
-            return <span {...props}>{childElements}</span>;
-          case "strong":
-            return <strong {...props}>{childElements}</strong>;
-          case "em":
-            return <em {...props}>{childElements}</em>;
-          case "b":
-            return <b {...props}>{childElements}</b>;
-          case "i":
-            return <i {...props}>{childElements}</i>;
-          case "a":
-            return <a {...props}>{childElements}</a>;
-          case "img":
-            return <img {...props} />;
-          case "br":
-            return <br {...props} />;
-          case "hr":
-            return <hr {...props} />;
-          case "blockquote":
-            return <blockquote {...props}>{childElements}</blockquote>;
-          case "code":
-            return <code {...props}>{childElements}</code>;
-          case "pre":
-            return <pre {...props}>{childElements}</pre>;
+          default:
+            return <>{childElements}</>;
         }
       }
       return undefined;
     },
   };
   
-  return parse(html, options);
+  return parse(normalizedHtml, options);
 }
 
