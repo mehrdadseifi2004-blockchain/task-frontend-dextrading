@@ -42,7 +42,15 @@ export const getToken = (
   );
 export const getTokenDescription = (tokenAddress: string): Promise<any> =>
   axios.get(
-    `${process.env.NEXT_PUBLIC_BLOG_URL}/api/posts/contract/${tokenAddress}`
+    `${process.env.NEXT_PUBLIC_BLOG_URL}/api/posts/contract/${tokenAddress}`,
+    {
+      params: {
+        full: true,
+        expanded: true,
+        seo: true,
+        include: "content,excerpt,body,description,overview,about,faq,useCases,fullContent,longContent"
+      }
+    }
   );
 
 export const getGems = (options: AxiosRequestConfig): Promise<any> =>

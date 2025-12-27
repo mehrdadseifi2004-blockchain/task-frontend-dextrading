@@ -111,7 +111,27 @@ export default async function Token({ params }: Props) {
     getTokenDescription(params.params[1]),
   ]);
 
-  const tokenHtmlContent = tokenDescription?.data?.data?.content;
+  const responseData = tokenDescription?.data?.data || tokenDescription?.data;
+  const contentFields = [
+    responseData?.content,
+    responseData?.fullContent,
+    responseData?.longContent,
+    responseData?.body,
+    responseData?.description,
+    responseData?.overview,
+    responseData?.about,
+    responseData?.excerpt,
+    responseData?.faq,
+    responseData?.useCases,
+    responseData?.summary,
+    responseData?.toc,
+    typeof responseData === 'string' ? responseData : null,
+  ].filter((field): field is string => typeof field === 'string' && field.trim().length > 0);
+  
+  const tokenHtmlContent = contentFields.length > 0 
+    ? contentFields.join("\n\n") 
+    : (responseData?.content || "");
+  
   const parsedContent = tokenHtmlContent ? parseHtmlToReact(tokenHtmlContent) : null;
 
   return (
