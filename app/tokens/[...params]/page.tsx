@@ -26,6 +26,10 @@ type searchParams = {
   network: string;
 };
 
+export const dynamic = "force-static";
+export const revalidate = 3600;
+export const runtime = "nodejs";
+
 /* -------------------- METADATA (بدون تغییر) -------------------- */
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
@@ -98,13 +102,14 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 /* -------------------- PAGE COMPONENT -------------------- */
 
 export default async function Token({ params }: Props) {
-  const searchedToken = await searchToken({
-    params: {
-      currencyAddress: params.params[1],
-    },
-  });
-
-  const tokenDescription = await getTokenDescription(params.params[1]);
+  const [searchedToken, tokenDescription] = await Promise.all([
+    searchToken({
+      params: {
+        currencyAddress: params.params[1],
+      },
+    }),
+    getTokenDescription(params.params[1]),
+  ]);
 
   const tokenHtmlContent = tokenDescription?.data?.data?.content;
   const parsedContent = tokenHtmlContent ? parseHtmlToReact(tokenHtmlContent) : null;
@@ -135,6 +140,8 @@ export default async function Token({ params }: Props) {
         {params.params[TOKEN_PAGE_PARAMS.NETWORK].toUpperCase()} Market Data
       </h1>
 
+      <TokenPage params={params} token={searchedToken} />
+
       {parsedContent && (
         <article className="prose max-w-none" itemScope itemType="https://schema.org/Article">
           <h2 itemProp="headline">About this token</h2>
@@ -143,8 +150,6 @@ export default async function Token({ params }: Props) {
           </div>
         </article>
       )}
-
-      <TokenPage params={params} token={searchedToken} />
 
       {tokenHtmlContent && (
         <TokenAccordion
