@@ -1,4 +1,4 @@
-import parse, { HTMLReactParserOptions, Element, domToReact } from "html-react-parser";
+import parse, { HTMLReactParserOptions, Element, domToReact, DOMNode } from "html-react-parser";
 import { ReactNode } from "react";
 
 export function parseHtmlToReact(html: string): ReactNode {
@@ -16,7 +16,10 @@ export function parseHtmlToReact(html: string): ReactNode {
           }
         });
         
-        const childElements = children ? domToReact(children, options) : null;
+        const childNodes = children ? (children as unknown as DOMNode[]) : [];
+        const childElements = childNodes.length > 0 
+          ? domToReact(childNodes, options) 
+          : null;
         
         switch (name) {
           case "p":
