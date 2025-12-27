@@ -135,23 +135,18 @@ export default async function Token({ params }: Props) {
 
       <TokenPage params={params} token={searchedToken} />
 
-      {/* ================= SEO CRITICAL SECTION ================= */}
       {tokenHtmlContent && (
-        <section
-          className="mt-10 prose prose-invert max-w-none"
-          aria-label="Token Description"
-        >
-          <h2>About this token</h2>
+        <article className="mt-10" itemScope itemType="https://schema.org/Article">
+          <h2 itemProp="headline">About this token</h2>
           <div
+            itemProp="articleBody"
             dangerouslySetInnerHTML={{
               __html: tokenHtmlContent,
             }}
           />
-        </section>
+        </article>
       )}
-      {/* ========================================================= */}
 
-      {/* UI Accordion (Client-side فقط برای تجربه کاربر) */}
       {tokenHtmlContent && (
         <TokenAccordion
           tokenImageUrl={
